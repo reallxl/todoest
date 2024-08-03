@@ -2,8 +2,8 @@ import { getTimeString } from '@/utils/helpers';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   TiTickOutline,
-  TiTick,
-  TiTimes,
+  // TiTick,
+  // TiTimes,
   TiTimesOutline,
   TiPen,
   TiPin,

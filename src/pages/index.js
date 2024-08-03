@@ -7,7 +7,7 @@ import {
   TiArrowUnsorted,
   TiPinOutline,
   TiPlus,
-  TiPlusOutline,
+  // TiPlusOutline,
   TiZoomOutline,
   TiArrowSortedUp,
   TiArrowSortedDown,
