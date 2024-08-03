@@ -12,6 +12,8 @@ import {
 } from 'react-icons/ti';
 
 import { Draft, Note, SearchModal } from '@/components';
+import { TOAST_TIMEOUT_MS } from '@/config';
+import { ADD_NOTE_STATUS } from '@/constants';
 
 const Home = () => {
   const [notes, setNotes] = useState([]);
@@ -159,10 +161,21 @@ const Home = () => {
     }
   };
 
-  const [isAdding, setIsAdding] = useState();
-  const handleAddNote = () => {
-    setIsAdding(true);
-  };
+  const [addNoteStatus, setAddNoteStatus] = useState(
+    ADD_NOTE_STATUS.READY_TO_ADD
+  );
+
+  useEffect(() => {
+    if (addNoteStatus !== ADD_NOTE_STATUS.JUST_ADDED) return;
+
+    const id = setTimeout(
+      () => setAddNoteStatus(ADD_NOTE_STATUS.READY_TO_ADD),
+      TOAST_TIMEOUT_MS
+    );
+    return () => clearTimeout(id);
+  }, [addNoteStatus]);
+
+  const handleAddNote = () => setAddNoteStatus(ADD_NOTE_STATUS.ADDING);
 
   const [listOffset, setListOffset] = useState(0);
   const listContainerRef = useRef();
@@ -237,9 +250,16 @@ const Home = () => {
             onClose={() => setIsSearching(false)}
           />
         )}
+        {!!keyword.length && (
+          <span className="self-start text-white">
+            Notes containing &quot;
+            <span className="font-bold">{keyword}</span>
+            &quot; :
+          </span>
+        )}
         {!!notes.length && (
           <div className="relative h-px w-full grow">
-            {!isAdding &&
+            {!addNoteStatus &&
               !selectedNote &&
               listContainerH &&
               sortedNotes.map(({ status }, index) => {
@@ -340,13 +360,18 @@ const Home = () => {
           </div>
         )}
         <Draft
-          open={isAdding}
+          open={addNoteStatus === ADD_NOTE_STATUS.ADDING}
           onOK={({ title, description }) => {
             setNotes([...notes, { title, description, timestamp: Date.now() }]);
-            setIsAdding(false);
+            setAddNoteStatus(ADD_NOTE_STATUS.JUST_ADDED);
           }}
-          onCancel={() => setIsAdding(false)}
+          onCancel={() => setAddNoteStatus(ADD_NOTE_STATUS.READY_TO_ADD)}
         />
+        <div
+          className={`absolute bottom-6 left-6 z-second w-[calc(100%-3rem)] rounded-md border-4 border-black bg-white p-4 text-black transition-all duration-300 ${addNoteStatus === ADD_NOTE_STATUS.JUST_ADDED ? 'opacity-100' : 'translate-y-full opacity-0'}`}
+        >
+          New note added !
+        </div>
       </main>
     </>
   );
