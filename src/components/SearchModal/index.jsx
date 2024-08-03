@@ -1,0 +1,59 @@
+import { useEffect, useRef } from 'react';
+import { TiZoomOutline } from 'react-icons/ti';
+
+const SearchModal = ({ onSearch, onClose }) => {
+  const containerRef = useRef();
+  const modalRef = useRef();
+  const inputRef = useRef();
+
+  useEffect(() => inputRef.current.focus(), []);
+
+  useEffect(() => {
+    const { current: containerEl } = containerRef;
+    const { current: modalEl } = modalRef;
+
+    const handleClick = (e) => {
+      const { target } = e;
+      if (modalEl.contains(target)) return;
+
+      onClose(e);
+    };
+
+    containerEl.addEventListener('click', handleClick);
+    return () => containerEl.removeEventListener('click', handleClick);
+  }, [onClose]);
+
+  const handleSearch = () => onSearch(inputRef.current.value);
+
+  const handleEnter = ({ key }) => {
+    if (key !== 'Enter') return;
+    handleSearch();
+  };
+
+  return (
+    <div
+      className="fixed left-0 top-0 z-[2147483647] h-screen w-screen"
+      ref={containerRef}
+    >
+      <div className="size-full bg-black opacity-70"></div>
+      <div
+        className="absolute left-1/2 top-1/2 flex h-fit w-[calc(100%-3rem)] -translate-x-1/2 -translate-y-1/2 items-center gap-2 rounded-md bg-white p-4"
+        ref={modalRef}
+      >
+        <input
+          className="h-6 w-full border-b-2 border-b-black text-black focus-visible:outline-none"
+          onKeyDown={handleEnter}
+          ref={inputRef}
+        ></input>
+        <div
+          className="cursor-pointer rounded-md bg-white p-1"
+          onClick={handleSearch}
+        >
+          <TiZoomOutline className="size-6 fill-black" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SearchModal;
