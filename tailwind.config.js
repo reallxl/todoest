@@ -7,6 +7,10 @@ module.exports = {
   ],
   theme: {
     extend: {
+      zIndex: {
+        top: 2147483647,
+        second: 2147483646,
+      },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic':
@@ -22,6 +26,9 @@ module.exports = {
         disappear: 'disappear 0.5s',
       },
     },
+  },
+  future: {
+    hoverOnlyWhenSupported: true,
   },
   plugins: [],
 };

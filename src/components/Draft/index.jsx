@@ -42,7 +42,7 @@ const Draft = ({ open, onOK, onCancel }) => {
 
   return (
     <div
-      className={`absolute left-1/2 top-1/2 z-10 box-border flex size-[calc(100%-3rem)] ${open ? '-translate-y-1/2 opacity-100' : 'translate-y-[200%] opacity-0'} -translate-x-1/2 select-none items-center gap-2 rounded-md border-2 border-black bg-yellow-200 p-6 text-black transition-all duration-300 md:w-96`}
+      className={`absolute left-1/2 top-1/2 z-top box-border flex size-[calc(100%-3rem)] ${open ? '-translate-y-1/2 opacity-100' : 'translate-y-[200%] opacity-0'} -translate-x-1/2 select-none items-center gap-2 rounded-md border-2 border-black bg-yellow-200 p-6 text-black transition-all duration-300 md:w-96`}
       ref={setContainerRef}
     >
       <div className="flex size-full w-px grow flex-col gap-2 text-wrap break-words transition-all duration-100">

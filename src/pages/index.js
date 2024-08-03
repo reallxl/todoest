@@ -1,7 +1,5 @@
-import { Draft, Note, SearchModal } from '@/components';
-import { MOCK_NOTES } from '@/data/mock';
-import Head from 'next/head';
 import { useEffect, useRef, useState } from 'react';
+import Head from 'next/head';
 import {
   TiRefreshOutline,
   TiArrowUnsorted,
@@ -13,16 +11,27 @@ import {
   TiArrowSortedDown,
 } from 'react-icons/ti';
 
+import { Draft, Note, SearchModal } from '@/components';
+
 const Home = () => {
-  const [notes, setNotes] = useState(MOCK_NOTES);
+  const [notes, setNotes] = useState([]);
   const [keyword, setKeyword] = useState('');
   const [selectedNote, setSelectedNote] = useState();
   const currentLayerRef = useRef(0);
 
-  useEffect(
-    () => setNotes(JSON.parse(localStorage.getItem('notes') ?? '[]')),
-    []
-  );
+  useEffect(() => {
+    const _notes = JSON.parse(localStorage.getItem('notes'));
+    if (!_notes) return;
+
+    setNotes(_notes);
+  }, []);
+
+  const [listContainerH, setListContainerH] = useState();
+  useEffect(() => {
+    if (!notes.length || listContainerH) return;
+    const { current: listContanierEl } = listContainerRef;
+    setListContainerH(listContanierEl.getBoundingClientRect().height);
+  }, [notes, listContainerH]);
 
   useEffect(() => {
     const handleBeforeUnload = () =>
@@ -32,47 +41,57 @@ const Home = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [notes]);
 
-  const renderActionButtons = () => (
-    <div
-      className={`flex w-full items-center justify-center gap-4 transition-all duration-300 ${selectedNote ? 'h-0 overflow-hidden' : 'h-fit'}`}
-    >
+  const renderActionButtons = () =>
+    notes?.length ? (
       <div
-        className="cursor-pointer rounded-md bg-white p-1"
-        onClick={() => setIsSearching(true)}
+        className={`flex w-full items-center justify-center gap-4 transition-all duration-300 ${selectedNote ? 'h-0 overflow-hidden' : 'h-fit'}`}
       >
-        <TiZoomOutline className="size-6 fill-black" />
-      </div>
-      {!!keyword.length && (
         <div
           className="cursor-pointer rounded-md bg-white p-1"
-          onClick={() => setKeyword('')}
+          onClick={() => setIsSearching(true)}
         >
-          <TiRefreshOutline className="size-6 fill-black" />
+          <TiZoomOutline className="size-6 fill-black" />
         </div>
-      )}
+        {!!keyword.length && (
+          <div
+            className="cursor-pointer rounded-md bg-white p-1"
+            onClick={() => setKeyword('')}
+          >
+            <TiRefreshOutline className="size-6 fill-black" />
+          </div>
+        )}
+        <div
+          className={`w-fit cursor-pointer rounded-full border-white ${selectedNote ? 'h-0 overflow-hidden border-none' : 'h-fit border-4'} transition-all duration-300`}
+          onClick={handleAddNote}
+        >
+          <div className="size-fit cursor-pointer rounded-full border-4 border-black bg-white p-2">
+            <TiPlus className="size-6 fill-black" />
+          </div>
+        </div>
+        <div
+          className="size-fit rounded-md bg-white p-1 opacity-50 hover:opacity-100"
+          onClick={handleSort}
+        >
+          {!currentSort ? (
+            <TiArrowUnsorted className="size-6 fill-black" />
+          ) : currentSort === 'asc' ? (
+            <TiArrowSortedUp className="size-6 fill-black" />
+          ) : (
+            <TiArrowSortedDown className="size-6 fill-black" />
+          )}
+        </div>
+        {!!keyword.length && <div className="size-8"></div>}
+      </div>
+    ) : (
       <div
-        className={`w-fit cursor-pointer rounded-full border-white ${selectedNote ? 'h-0 overflow-hidden border-none' : 'h-fit border-4'} transition-all duration-300`}
+        className="size-fit cursor-pointer rounded-full border-8 border-white hover:border-yellow-200 active:border-yellow-200"
         onClick={handleAddNote}
       >
-        <div className="size-fit cursor-pointer rounded-full border-4 border-black bg-white p-2">
-          <TiPlus className="size-6 fill-black" />
+        <div className="size-fit cursor-pointer rounded-full border-8 border-black bg-white p-2">
+          <TiPlus className="size-12 fill-black" />
         </div>
       </div>
-      <div
-        className="size-fit rounded-md bg-white p-1 opacity-50 hover:opacity-100"
-        onClick={handleSort}
-      >
-        {!currentSort ? (
-          <TiArrowUnsorted className="size-6 fill-black" />
-        ) : currentSort === 'asc' ? (
-          <TiArrowSortedUp className="size-6 fill-black" />
-        ) : (
-          <TiArrowSortedDown className="size-6 fill-black" />
-        )}
-      </div>
-      {!!keyword.length && <div className="size-8"></div>}
-    </div>
-  );
+    );
 
   const handleDragStart = ({ target }) => {
     const noteEl = target.closest('div');
@@ -145,14 +164,11 @@ const Home = () => {
     setIsAdding(true);
   };
 
-  const [listContainerH, setListContainerH] = useState();
   const [listOffset, setListOffset] = useState(0);
   const listContainerRef = useRef();
   useEffect(() => {
     const { current: listContanierEl } = listContainerRef ?? {};
     if (!listContanierEl) return;
-
-    setListContainerH(listContanierEl.getBoundingClientRect().height);
 
     const handleScroll = () => {
       const { top } = listContanierEl.getBoundingClientRect();
@@ -213,7 +229,7 @@ const Home = () => {
       <Head>
         <title>todoest</title>
       </Head>
-      <main className="relative flex size-full flex-col items-center gap-4 overflow-hidden p-6 md:p-24">
+      <main className="relative flex size-full flex-col items-center justify-center gap-4 overflow-hidden p-6 md:p-24">
         {renderActionButtons()}
         {!!isSearching && (
           <SearchModal
@@ -221,104 +237,108 @@ const Home = () => {
             onClose={() => setIsSearching(false)}
           />
         )}
-        <div className="relative h-px w-full grow">
-          {!isAdding &&
-            !selectedNote &&
-            listContainerH &&
-            sortedNotes.map(({ status }, index) => {
-              const isPinned = status?.includes('pinned');
-              if (!isPinned) return;
+        {!!notes.length && (
+          <div className="relative h-px w-full grow">
+            {!isAdding &&
+              !selectedNote &&
+              listContainerH &&
+              sortedNotes.map(({ status }, index) => {
+                const isPinned = status?.includes('pinned');
+                if (!isPinned) return;
 
-              const posY = 7 * 16 * index - 12 + listOffset;
-
-              return (
-                <div
-                  key={index}
-                  className="absolute left-0 top-0 z-[2147483646] rounded-full border-2 border-black bg-white p-0.5"
-                  style={{
-                    transform: `translate(-50%, ${posY}px)`,
-                    opacity:
-                      posY >= -12 && posY <= listContainerH - 12
-                        ? 1
-                        : posY < -24 || posY > listContainerH
-                          ? 0
-                          : posY < -12
-                            ? (posY + 24) / 12
-                            : 1 - (posY - listContainerH + 12) / 12,
-                  }}
-                >
-                  <TiPinOutline className="fill-black" />
-                </div>
-              );
-            })}
-          <div
-            className={`relative size-full ${selectedNote ? '' : 'overflow-x-hidden overflow-y-scroll'}`}
-            ref={listContainerRef}
-          >
-            <div
-              className={`flex ${selectedNote ? 'h-full' : 'h-fit'} w-full flex-col gap-2`}
-            >
-              {sortedNotes.map((note) => {
-                const { title, description, timestamp, status } = note;
-                const isSelected = selectedNote === note;
+                const posY = 7 * 16 * index - 12 + listOffset;
 
                 return (
-                  <Note
-                    key={timestamp}
-                    dataKey={timestamp}
-                    title={title}
-                    description={description}
-                    timestamp={timestamp}
-                    onClick={() =>
-                      setSelectedNote((prevSelectedNote) =>
-                        prevSelectedNote === note ? undefined : note
-                      )
-                    }
-                    onDragStart={handleDragStart}
-                    onDragEnd={handleDragEnd}
-                    onPin={() => {
-                      const _notes = notes.slice();
-                      const note = _notes.find(
-                        ({ timestamp: ts }) => ts === timestamp
-                      );
-                      const { status } = note;
-                      if (status?.includes('pinned'))
-                        note.status = note.status.filter((s) => s !== 'pinned');
-                      else note.status = (status ?? []).concat('pinned');
-
-                      setNotes(_notes);
+                  <div
+                    key={index}
+                    className="absolute left-0 top-0 z-second rounded-full border-2 border-black bg-white p-0.5"
+                    style={{
+                      transform: `translate(-50%, ${posY}px)`,
+                      opacity:
+                        posY >= -12 && posY <= listContainerH - 12
+                          ? 1
+                          : posY < -24 || posY > listContainerH
+                            ? 0
+                            : posY < -12
+                              ? (posY + 24) / 12
+                              : 1 - (posY - listContainerH + 12) / 12,
                     }}
-                    onEdit={({ title, description }) =>
-                      setNotes((prevNotes) => {
-                        const _notes = prevNotes.slice();
+                  >
+                    <TiPinOutline className="fill-black" />
+                  </div>
+                );
+              })}
+            <div
+              className={`relative size-full ${selectedNote ? '' : 'overflow-x-hidden overflow-y-scroll'}`}
+              ref={listContainerRef}
+            >
+              <div
+                className={`flex ${selectedNote ? 'h-full' : 'h-fit'} w-full flex-col gap-2`}
+              >
+                {sortedNotes.map((note) => {
+                  const { title, description, timestamp, status } = note;
+                  const isSelected = selectedNote === note;
+
+                  return (
+                    <Note
+                      key={timestamp}
+                      dataKey={timestamp}
+                      title={title}
+                      description={description}
+                      timestamp={timestamp}
+                      onClick={() =>
+                        setSelectedNote((prevSelectedNote) =>
+                          prevSelectedNote === note ? undefined : note
+                        )
+                      }
+                      onDragStart={handleDragStart}
+                      onDragEnd={handleDragEnd}
+                      onPin={() => {
+                        const _notes = notes.slice();
                         const note = _notes.find(
                           ({ timestamp: ts }) => ts === timestamp
                         );
-                        note.title = title;
-                        note.description = description;
-                        return _notes;
-                      })
-                    }
-                    onDone={() => {
-                      const _notes = notes.slice();
-                      const note = _notes.find(
-                        ({ timestamp: ts }) => ts === timestamp
-                      );
-                      note.status = (note.status ?? []).concat('done');
-                      setNotes(_notes);
-                    }}
-                    onDelete={() => {
-                      setSelectedNote();
-                      setNotes(notes.filter((n) => n !== note));
-                    }}
-                    status={status ?? []}
-                    selected={isSelected}
-                  />
-                );
-              })}
+                        const { status } = note;
+                        if (status?.includes('pinned'))
+                          note.status = note.status.filter(
+                            (s) => s !== 'pinned'
+                          );
+                        else note.status = (status ?? []).concat('pinned');
+
+                        setNotes(_notes);
+                      }}
+                      onEdit={({ title, description }) =>
+                        setNotes((prevNotes) => {
+                          const _notes = prevNotes.slice();
+                          const note = _notes.find(
+                            ({ timestamp: ts }) => ts === timestamp
+                          );
+                          note.title = title;
+                          note.description = description;
+                          return _notes;
+                        })
+                      }
+                      onDone={() => {
+                        const _notes = notes.slice();
+                        const note = _notes.find(
+                          ({ timestamp: ts }) => ts === timestamp
+                        );
+                        note.status = (note.status ?? []).concat('done');
+                        setNotes(_notes);
+                      }}
+                      onDelete={() => {
+                        setSelectedNote();
+                        setNotes(notes.filter((n) => n !== note));
+                      }}
+                      status={status ?? []}
+                      selected={isSelected}
+                    />
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
+        )}
         <Draft
           open={isAdding}
           onOK={({ title, description }) => {

@@ -32,7 +32,7 @@ const SearchModal = ({ onSearch, onClose }) => {
 
   return (
     <div
-      className="fixed left-0 top-0 z-[2147483647] h-screen w-screen"
+      className="fixed left-0 top-0 z-top h-screen w-screen"
       ref={containerRef}
     >
       <div className="size-full bg-black opacity-70"></div>
