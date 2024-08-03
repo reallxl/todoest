@@ -12,6 +12,13 @@ const SearchModal = ({ onSearch, onClose }) => {
     const { current: containerEl } = containerRef;
     const { current: modalEl } = modalRef;
 
+    const handleKeyDown = (e) => {
+      const { key } = e;
+      if (key !== 'Escape') return;
+
+      onClose(e);
+    };
+
     const handleClick = (e) => {
       const { target } = e;
       if (modalEl.contains(target)) return;
@@ -19,8 +26,12 @@ const SearchModal = ({ onSearch, onClose }) => {
       onClose(e);
     };
 
+    containerEl.addEventListener('keydown', handleKeyDown);
     containerEl.addEventListener('click', handleClick);
-    return () => containerEl.removeEventListener('click', handleClick);
+    return () => {
+      containerEl.removeEventListener('keydown', handleKeyDown);
+      containerEl.removeEventListener('click', handleClick);
+    };
   }, [onClose]);
 
   const handleSearch = () => onSearch(inputRef.current.value);
@@ -46,7 +57,7 @@ const SearchModal = ({ onSearch, onClose }) => {
           ref={inputRef}
         ></input>
         <div
-          className="cursor-pointer rounded-md bg-white p-1"
+          className="cursor-pointer rounded-md border-2 border-white bg-white p-1 hover:border-black active:border-black"
           onClick={handleSearch}
         >
           <TiZoomOutline className="size-6 fill-black" />

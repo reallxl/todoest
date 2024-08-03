@@ -47,21 +47,21 @@ const Home = () => {
         className={`flex w-full items-center justify-center gap-4 transition-all duration-300 ${selectedNote ? 'h-0 overflow-hidden' : 'h-fit'}`}
       >
         <div
-          className="cursor-pointer rounded-md bg-white p-1"
+          className="cursor-pointer rounded-md border bg-white p-1 hover:border-white hover:bg-black active:border-white active:bg-black [&>svg]:hover:fill-white [&>svg]:active:fill-white"
           onClick={() => setIsSearching(true)}
         >
           <TiZoomOutline className="size-6 fill-black" />
         </div>
         {!!keyword.length && (
           <div
-            className="cursor-pointer rounded-md bg-white p-1"
+            className="cursor-pointer rounded-md border bg-white p-1 hover:border-white hover:bg-black active:border-white active:bg-black [&>svg]:hover:fill-white [&>svg]:active:fill-white"
             onClick={() => setKeyword('')}
           >
             <TiRefreshOutline className="size-6 fill-black" />
           </div>
         )}
         <div
-          className={`w-fit cursor-pointer rounded-full border-white ${selectedNote ? 'h-0 overflow-hidden border-none' : 'h-fit border-4'} transition-all duration-300`}
+          className={`w-fit cursor-pointer rounded-full border-white ${selectedNote ? 'h-0 overflow-hidden border-none' : 'h-fit border-4'} transition-all duration-300 hover:border-yellow-200 active:border-yellow-200`}
           onClick={handleAddNote}
         >
           <div className="size-fit cursor-pointer rounded-full border-4 border-black bg-white p-2">
@@ -69,7 +69,7 @@ const Home = () => {
           </div>
         </div>
         <div
-          className="size-fit rounded-md bg-white p-1 opacity-50 hover:opacity-100"
+          className={`size-fit cursor-pointer rounded-md border bg-white p-1 ${!currentSort ? 'opacity-50 hover:opacity-100 active:opacity-100' : 'hover:border-white hover:bg-black active:border-white active:bg-black [&>svg]:hover:fill-white [&>svg]:active:fill-white'}`}
           onClick={handleSort}
         >
           {!currentSort ? (
