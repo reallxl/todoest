@@ -1,15 +1,8 @@
-import { useDoubleConfirm } from '@/hooks';
-import { getTimeString } from '@/utils/helpers';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  TiTickOutline,
-  // TiTick,
-  // TiTimes,
-  TiTimesOutline,
-  TiPen,
-  TiPin,
-  TiPinOutline,
-} from 'react-icons/ti';
+
+import { getTimeString } from '@/utils/helpers';
+import ActionButtonColumn from './ActionButtonColumn';
+import Content from './Content';
 
 const Note = ({
   dataKey,
@@ -252,66 +245,10 @@ const Note = ({
   const descriptionRef = useRef();
 
   const doneButtonRef = useRef();
-
   const [isConfirming, setIsConfirming] = useState();
 
-  // useEffect(() => {
-  //   const { current: containerEl } = ref;
-  //   if (!containerEl) return;
-
-  //   const handleClick = (e) => {
-  //     const { current: el } = doneButtonRef;
-  //     if (!el) return;
-
-  //     const { target } = e;
-  //     console.log('dc onclick', isConfirming);
-  //     if (el.contains(target)) {
-  //       if (isConfirming) {
-  //         onDone(e);
-  //       } else setIsConfirming(true);
-  //     } else if (isConfirming) setIsConfirming(false);
-  //   };
-
-  //   containerEl.addEventListener('click', handleClick);
-  //   return () => containerEl.removeEventListener('click', handleClick);
-  // }, [onDone, isConfirming]);
-
   const deleteButtonRef = useRef();
-
   const [isConfirmingDelete, setIsConfirmingDelete] = useState();
-
-  // useEffect(() => {
-  //   const { current: containerEl } = ref;
-  //   if (!containerEl) return;
-
-  //   const handleClick = (e) => {
-  //     const { current: el } = deleteButtonRef;
-  //     if (!el) return;
-
-  //     const { target } = e;
-  //     console.log('dc onclick', isConfirmingDelete);
-  //     if (el.contains(target)) {
-  //       if (isConfirmingDelete) {
-  //         onDelete(e);
-  //       } else setIsConfirmingDelete(true);
-  //     } else if (isConfirmingDelete) setIsConfirmingDelete(false);
-  //   };
-
-  //   containerEl.addEventListener('click', handleClick);
-  //   return () => containerEl.removeEventListener('click', handleClick);
-  // }, [onDelete, isConfirmingDelete]);
-
-  // const {
-  //   isConfirming: isConfirmingDelete,
-  //   setContainerRef: setContainerRef2,
-  //   ref: deleteButtonRef,
-  // } = useDoubleConfirm(onDelete);
-
-  // const {
-  //   isConfirming,
-  //   setContainerRef,
-  //   ref: doneButtonRef,
-  // } = useDoubleConfirm(onDone);
 
   const handleClickOK = (e) => {
     e.stopPropagation();
@@ -333,109 +270,36 @@ const Note = ({
     setIsConfirmingDelete(false);
   }, [isEditing]);
 
-  const renderEditor = () => (
-    <>
-      <input
-        className="h-6 w-full border-b-2 border-black bg-transparent px-2 py-1 font-bold focus:border-b-green-500 focus-visible:outline-none"
-        placeholder="Enter Title..."
-        defaultValue={title}
-        onClick={(e) => e.stopPropagation()}
-        ref={titleRef}
-      />
-      <textarea
-        className="h-px w-full grow rounded-md border-2 border-black bg-transparent p-2 focus:border-green-500 focus-visible:outline-none"
-        placeholder=""
-        defaultValue={description}
-        onClick={(e) => e.stopPropagation()}
-        ref={descriptionRef}
-      />
-    </>
-  );
-
-  const renderContent = () => (
-    <>
-      {title && (
-        <h3 className={`${selected ? '' : 'line-clamp-1'} w-full font-bold`}>
-          {title}
-        </h3>
-      )}
-      {description && (
-        <p
-          className={`${selected ? 'h-px grow overflow-y-scroll' : title ? 'line-clamp-2' : 'line-clamp-3'} w-full`}
-        >
-          {description}
-        </p>
-      )}
-    </>
-  );
-
-  const pinned = status?.includes?.('pinned');
   const done = status?.includes?.('done');
 
-  const renderActionButtons = () => (
-    <div
-      className={`absolute right-0 top-1/2 flex -translate-y-1/2 translate-x-1/2 flex-col gap-2 transition-all ${selected ? 'duration-300' : 'opacity-0 duration-0'}`}
-    >
-      <div
-        className={`cursor-pointer rounded-md border-2 ${pinned ? 'border-white bg-black' : 'border-black bg-white hover:border-white hover:bg-black active:border-white active:bg-black [&_svg]:hover:fill-white [&_svg]:active:fill-white'} p-0.5 transition-opacity ${isEditing ? 'opacity-0' : ''} duration-300`}
-        onClick={(e) => {
-          e.stopPropagation();
-          onPin?.();
-        }}
-      >
-        {pinned ? (
-          <TiPin className="size-6 fill-white" />
-        ) : (
-          <TiPinOutline className="size-6 fill-black" />
-        )}
-      </div>
-      {!done && (
-        <>
-          <div
-            className={`cursor-pointer rounded-md border-2 border-black bg-white p-0.5 transition-opacity ${isEditing ? 'opacity-0' : ''} border-black bg-white duration-300 hover:border-white hover:bg-black active:border-white active:bg-black [&_svg]:hover:fill-white [&_svg]:active:fill-white`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsEditing(true);
-            }}
-          >
-            <TiPen className="size-6" />
-          </div>
-          <div className="relative size-fit">
-            <div
-              className={`cursor-pointer rounded-md border-2 border-green-500 bg-white p-0.5 ${selected ? '' : 'opacity-50 hover:opacity-100'} ${isConfirming ? 'border-white bg-green-500 [&>svg]:fill-white' : 'border-green-500 bg-white hover:bg-green-500 active:bg-green-500 [&>svg]:hover:fill-white [&>svg]:active:fill-white'}`}
-              {...(isEditing
-                ? { onClick: handleClickOK }
-                : { ref: doneButtonRef })}
-            >
-              <TiTickOutline
-                className={`${selected ? 'size-6' : 'size-4'} z-0 fill-green-500 stroke-green-500`}
-              />
-            </div>
-            <div
-              className={`absolute left-0 top-1/2 -z-10 w-max -translate-y-1/2 rounded-s-md border-2 border-black bg-white pe-6 ps-2 text-sm text-black transition-all duration-300 ${isConfirming ? 'translate-x-[calc(-100%+1rem)] opacity-100' : '-translate-x-2/3 opacity-0'}`}
-            >
-              All set?
-            </div>
-          </div>
-        </>
-      )}
-      <div className="relative size-fit">
-        <div
-          className={`relative cursor-pointer rounded-md border-2 p-0.5 ${isConfirmingDelete ? 'border-white bg-red-500 [&>svg]:fill-white' : 'border-red-500 bg-white hover:bg-red-500 active:bg-red-500 [&>svg]:hover:fill-white [&>svg]:active:fill-white'}`}
-          {...(isEditing
-            ? { onClick: handleClickCancel }
-            : { ref: deleteButtonRef })}
-        >
-          <TiTimesOutline className="size-6 fill-red-500 stroke-red-500" />
-        </div>
-        <div
-          className={`absolute left-0 top-1/2 -z-10 w-max -translate-y-1/2 rounded-s-md border-2 border-black bg-white pe-6 ps-2 text-sm text-black transition-all duration-300 ${isConfirmingDelete ? 'translate-x-[calc(-100%+1rem)] opacity-100' : '-translate-x-2/3 opacity-0'}`}
-        >
-          Sure to abandon...?
-        </div>
-      </div>
-    </div>
-  );
+  const handleClick = (e) => {
+    const { current: el } = doneButtonRef ?? {};
+    const { target } = e;
+    if (el?.contains(target)) {
+      if (isConfirming) {
+        onDone(e);
+      } else setIsConfirming(true);
+    } else if (isConfirming) setIsConfirming(false);
+
+    const { current: delEl } = deleteButtonRef ?? {};
+
+    if (delEl?.contains(target)) {
+      if (isConfirmingDelete) {
+        onDelete(e);
+      } else setIsConfirmingDelete(true);
+    } else if (isConfirmingDelete) setIsConfirmingDelete(false);
+
+    if (
+      !isClicking ||
+      isEditing ||
+      isConfirming ||
+      isConfirmingDelete ||
+      el?.contains(target) ||
+      delEl?.contains(target)
+    )
+      return;
+    onClick?.(e);
+  };
 
   const renderDoneMark = () => (
     <div
@@ -443,6 +307,12 @@ const Note = ({
     >
       DONE
     </div>
+  );
+
+  const renderTimestampString = () => (
+    <span className="absolute bottom-2 right-6 text-xs text-slate-500">
+      {`${timestamp !== dataKey ? 'Last edited ' : ''}${getTimeString(timestamp)}`}
+    </span>
   );
 
   return (
@@ -460,47 +330,37 @@ const Note = ({
       onTouchStart={handleDragStart}
       onMouseUp={handleDragEnd}
       onTouchEnd={handleDragEnd}
-      onClick={(e) => {
-        const { current: el } = doneButtonRef ?? {};
-        const { target } = e;
-        if (el?.contains(target)) {
-          if (isConfirming) {
-            onDone(e);
-          } else setIsConfirming(true);
-        } else if (isConfirming) setIsConfirming(false);
-
-        const { current: delEl } = deleteButtonRef ?? {};
-
-        if (delEl?.contains(target)) {
-          if (isConfirmingDelete) {
-            onDelete(e);
-          } else setIsConfirmingDelete(true);
-        } else if (isConfirmingDelete) setIsConfirmingDelete(false);
-
-        if (
-          !isClicking ||
-          isEditing ||
-          isConfirming ||
-          isConfirmingDelete ||
-          el?.contains(target) ||
-          delEl?.contains(target)
-        )
-          return;
-        onClick?.(e);
-      }}
+      onClick={handleClick}
     >
       {done && renderDoneMark()}
       <div
         className={`${selected ? 'size-full gap-2' : 'w-full'} flex flex-col text-wrap break-words transition-all duration-100`}
       >
-        {isEditing ? renderEditor() : renderContent()}
+        <Content
+          selected={selected}
+          isEditing={isEditing}
+          title={title}
+          titleRef={titleRef}
+          description={description}
+          descriptionRef={descriptionRef}
+        />
       </div>
-      {selected && (
-        <span className="absolute bottom-2 right-6 text-xs text-slate-500">
-          {`${timestamp !== dataKey ? 'Last edited ' : ''}${getTimeString(timestamp)}`}
-        </span>
-      )}
-      {renderActionButtons()}
+      {selected && renderTimestampString()}
+      <ActionButtonColumn
+        selected={selected}
+        isEditing={isEditing}
+        status={status}
+        onPin={onPin}
+        onEdit={() => setIsEditing(true)}
+        isConfirming={isConfirming}
+        okProps={
+          isEditing ? { onClick: handleClickOK } : { ref: doneButtonRef }
+        }
+        isConfirmingDelete={isConfirmingDelete}
+        cancelProps={
+          isEditing ? { onClick: handleClickCancel } : { ref: deleteButtonRef }
+        }
+      />
     </div>
   );
 };

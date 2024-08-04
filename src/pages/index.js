@@ -14,6 +14,10 @@ import { Provider } from '@/context/app';
 
 const Home = () => {
   const [notes, setNotes] = useState([]);
+  const [selectedNote, setSelectedNote] = useState();
+  const [isSearching, setIsSearching] = useState();
+  const [keyword, setKeyword] = useState('');
+  const [sorting, setSorting] = useState();
 
   useEffect(() => {
     const _notes = JSON.parse(localStorage.getItem('notes'));
@@ -22,19 +26,6 @@ const Home = () => {
     setNotes(_notes);
   }, []);
 
-  const [keyword, setKeyword] = useState('');
-
-  const renderSearchResultText = () => (
-    <span className="self-start text-white">
-      Notes containing &quot;
-      <span className="font-bold">{keyword}</span>
-      &quot; :{' '}
-      {`${!sortedNotes.length ? 'no result found. Try something else.' : ''}`}
-    </span>
-  );
-
-  const [selectedNote, setSelectedNote] = useState();
-
   useEffect(() => {
     const handleBeforeUnload = () =>
       localStorage.setItem('notes', JSON.stringify(notes));
@@ -42,37 +33,6 @@ const Home = () => {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [notes]);
-
-  const [addNoteStatus, setAddNoteStatus] = useState(
-    ADD_NOTE_STATUS.READY_TO_ADD
-  );
-
-  useEffect(() => {
-    if (addNoteStatus !== ADD_NOTE_STATUS.JUST_ADDED) return;
-
-    const id = setTimeout(
-      () => setAddNoteStatus(ADD_NOTE_STATUS.READY_TO_ADD),
-      TOAST_TIMEOUT_MS
-    );
-    return () => clearTimeout(id);
-  }, [addNoteStatus]);
-
-  const renderNoteAddedToast = () => (
-    <div
-      className={`absolute bottom-6 left-6 z-second w-[calc(100%-3rem)] rounded-md border-4 border-black bg-white p-4 text-black transition-all duration-300 ${addNoteStatus === ADD_NOTE_STATUS.JUST_ADDED ? 'opacity-100' : 'translate-y-full opacity-0'}`}
-    >
-      New item added !
-    </div>
-  );
-
-  const handleAddNote = () => setAddNoteStatus(ADD_NOTE_STATUS.ADDING);
-
-  const [isSearching, setIsSearching] = useState();
-
-  const handleSearch = (k) => {
-    setKeyword(k);
-    setIsSearching(false);
-  };
 
   const pinnedNotes =
     notes.filter(({ status }) => status?.includes('pinned')) ?? [];
@@ -92,7 +52,43 @@ const Home = () => {
       return regex.test(title) || regex.test(description);
     });
 
-  const [sorting, setSorting] = useState();
+  const handleSearch = (k) => {
+    setKeyword(k);
+    setIsSearching(false);
+  };
+
+  const renderSearchResultText = () => (
+    <span className="self-start text-white">
+      Notes containing &quot;
+      <span className="font-bold">{keyword}</span>
+      &quot; :{' '}
+      {`${!sortedNotes.length ? 'no result found. Try something else.' : ''}`}
+    </span>
+  );
+
+  const [addNoteStatus, setAddNoteStatus] = useState(
+    ADD_NOTE_STATUS.READY_TO_ADD
+  );
+
+  useEffect(() => {
+    if (addNoteStatus !== ADD_NOTE_STATUS.JUST_ADDED) return;
+
+    const id = setTimeout(
+      () => setAddNoteStatus(ADD_NOTE_STATUS.READY_TO_ADD),
+      TOAST_TIMEOUT_MS
+    );
+    return () => clearTimeout(id);
+  }, [addNoteStatus]);
+
+  const handleAddNote = () => setAddNoteStatus(ADD_NOTE_STATUS.ADDING);
+
+  const renderNoteAddedToast = () => (
+    <div
+      className={`absolute bottom-6 left-6 z-second w-[calc(100%-3rem)] rounded-md border-4 border-black bg-white p-4 text-black transition-all duration-300 ${addNoteStatus === ADD_NOTE_STATUS.JUST_ADDED ? 'opacity-100' : 'translate-y-full opacity-0'}`}
+    >
+      New item added !
+    </div>
+  );
 
   const handleSort = () => {
     const sort = sorting === SORTING.ASC ? SORTING.DESC : SORTING.ASC;
