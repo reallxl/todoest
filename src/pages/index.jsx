@@ -112,42 +112,42 @@ const Home = () => {
         <title>todoest</title>
       </Head>
       <main className="relative flex size-full flex-col items-center justify-center gap-4 overflow-hidden p-6 md:p-12">
-        {notes.length ? (
-          <Provider value={{ keyword, sorting, selectedNote, addNoteStatus }}>
+        <Provider value={{ keyword, sorting, selectedNote, addNoteStatus }}>
+          {notes.length ? (
             <ActionButtonRow
               onSearch={() => setIsSearching(true)}
               onResetSearch={() => setKeyword('')}
               onAddNote={handleAddNote}
               onSort={handleSort}
             />
-            {!!isSearching && (
-              <SearchModal
-                onSearch={handleSearch}
-                onClose={() => setIsSearching(false)}
-              />
-            )}
-            {!!keyword.length && renderSearchResultText()}
-            <Board
-              notes={sortedNotes}
-              onSelectNote={setSelectedNote}
-              onUpdateNotes={setNotes}
+          ) : (
+            <LandingActionButton onAddNote={handleAddNote} />
+          )}
+          {!!isSearching && (
+            <SearchModal
+              onSearch={handleSearch}
+              onClose={() => setIsSearching(false)}
             />
-            <Draft
-              open={addNoteStatus === ADD_NOTE_STATUS.ADDING}
-              onOK={({ title, description }) => {
-                setNotes([
-                  ...notes,
-                  { title, description, createdAt: Date.now() },
-                ]);
-                setAddNoteStatus(ADD_NOTE_STATUS.JUST_ADDED);
-              }}
-              onCancel={() => setAddNoteStatus(ADD_NOTE_STATUS.READY_TO_ADD)}
-            />
-            {renderNoteAddedToast()}
-          </Provider>
-        ) : (
-          <LandingActionButton onAddNote={handleAddNote} />
-        )}
+          )}
+          {!!keyword.length && renderSearchResultText()}
+          <Board
+            notes={sortedNotes}
+            onSelectNote={setSelectedNote}
+            onUpdateNotes={setNotes}
+          />
+          <Draft
+            open={addNoteStatus === ADD_NOTE_STATUS.ADDING}
+            onOK={({ title, description }) => {
+              setNotes([
+                ...notes,
+                { title, description, createdAt: Date.now() },
+              ]);
+              setAddNoteStatus(ADD_NOTE_STATUS.JUST_ADDED);
+            }}
+            onCancel={() => setAddNoteStatus(ADD_NOTE_STATUS.READY_TO_ADD)}
+          />
+          {renderNoteAddedToast()}
+        </Provider>
       </main>
     </>
   );

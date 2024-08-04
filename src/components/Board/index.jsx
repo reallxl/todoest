@@ -144,7 +144,7 @@ const Board = ({ notes, onSelectNote, onUpdateNotes }) => {
       });
 
   return (
-    <div className="relative h-px w-full grow">
+    <div className={`relative w-full ${notes.length ? 'h-px grow' : ''}`}>
       {addNoteStatus === ADD_NOTE_STATUS.READY_TO_ADD &&
         !selectedNote &&
         listContainerH &&
