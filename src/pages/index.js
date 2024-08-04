@@ -179,6 +179,7 @@ const Home = () => {
 
   const [listOffset, setListOffset] = useState(0);
   const listContainerRef = useRef();
+
   useEffect(() => {
     const { current: listContanierEl } = listContainerRef ?? {};
     if (!listContanierEl) return;
@@ -272,99 +273,95 @@ const Home = () => {
             {`${!sortedNotes.length ? 'no result found. Try something else.' : ''}`}
           </span>
         )}
-        {!!notes.length && (
-          <div className="relative h-px w-full grow">
-            {addNoteStatus === ADD_NOTE_STATUS.READY_TO_ADD &&
-              !selectedNote &&
-              listContainerH &&
-              sortedNotes.map(({ status }, index) => {
-                const isPinned = status?.includes('pinned');
-                if (!isPinned) return;
+        <div className="relative h-px w-full grow">
+          {addNoteStatus === ADD_NOTE_STATUS.READY_TO_ADD &&
+            !selectedNote &&
+            listContainerH &&
+            sortedNotes.map(({ status }, index) => {
+              const isPinned = status?.includes('pinned');
+              if (!isPinned) return;
 
-                const posY = 7 * 16 * index - 12 + listOffset;
+              const posY = 7 * 16 * index - 12 + listOffset;
+
+              return (
+                <div
+                  key={index}
+                  className="absolute left-0 top-0 z-second rounded-full border-2 border-black bg-white p-0.5"
+                  style={{
+                    transform: `translate(-50%, ${posY}px)`,
+                    opacity:
+                      posY >= -12 && posY <= listContainerH - 12
+                        ? 1
+                        : posY < -24 || posY > listContainerH
+                          ? 0
+                          : posY < -12
+                            ? (posY + 24) / 12
+                            : 1 - (posY - listContainerH + 12) / 12,
+                  }}
+                >
+                  <TiPinOutline className="fill-black" />
+                </div>
+              );
+            })}
+          <div
+            className={`relative size-full ${selectedNote ? '' : 'overflow-x-hidden overflow-y-scroll'}`}
+            ref={listContainerRef}
+          >
+            <div
+              className={`flex ${selectedNote ? 'h-full' : 'h-fit'} w-full flex-col gap-2`}
+            >
+              {sortedNotes.map((note) => {
+                const { title, description, createdAt, updatedAt, status } =
+                  note;
+                const isSelected = selectedNote === note;
 
                 return (
-                  <div
-                    key={index}
-                    className="absolute left-0 top-0 z-second rounded-full border-2 border-black bg-white p-0.5"
-                    style={{
-                      transform: `translate(-50%, ${posY}px)`,
-                      opacity:
-                        posY >= -12 && posY <= listContainerH - 12
-                          ? 1
-                          : posY < -24 || posY > listContainerH
-                            ? 0
-                            : posY < -12
-                              ? (posY + 24) / 12
-                              : 1 - (posY - listContainerH + 12) / 12,
+                  <Note
+                    key={createdAt}
+                    dataKey={createdAt}
+                    title={title}
+                    description={description}
+                    timestamp={updatedAt ?? createdAt}
+                    onClick={() =>
+                      setSelectedNote((prevSelectedNote) =>
+                        prevSelectedNote === note ? undefined : note
+                      )
+                    }
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                    onPin={() => {
+                      const _notes = notes.slice();
+                      const note = _notes.find(
+                        ({ createdAt: ts }) => ts === createdAt
+                      );
+                      const { status } = note;
+                      if (status?.includes('pinned'))
+                        note.status = note.status.filter((s) => s !== 'pinned');
+                      else note.status = (status ?? []).concat('pinned');
+
+                      setNotes(_notes);
                     }}
-                  >
-                    <TiPinOutline className="fill-black" />
-                  </div>
+                    onEdit={getHandleEdit(note)}
+                    onDone={() => {
+                      const _notes = notes.slice();
+                      const note = _notes.find(
+                        ({ createdAt: ts }) => ts === createdAt
+                      );
+                      note.status = (note.status ?? []).concat('done');
+                      setNotes(_notes);
+                    }}
+                    onDelete={() => {
+                      setSelectedNote();
+                      setNotes(notes.filter((n) => n !== note));
+                    }}
+                    status={status ?? []}
+                    selected={isSelected}
+                  />
                 );
               })}
-            <div
-              className={`relative size-full ${selectedNote ? '' : 'overflow-x-hidden overflow-y-scroll'}`}
-              ref={listContainerRef}
-            >
-              <div
-                className={`flex ${selectedNote ? 'h-full' : 'h-fit'} w-full flex-col gap-2`}
-              >
-                {sortedNotes.map((note) => {
-                  const { title, description, createdAt, updatedAt, status } =
-                    note;
-                  const isSelected = selectedNote === note;
-
-                  return (
-                    <Note
-                      key={createdAt}
-                      dataKey={createdAt}
-                      title={title}
-                      description={description}
-                      timestamp={updatedAt ?? createdAt}
-                      onClick={() =>
-                        setSelectedNote((prevSelectedNote) =>
-                          prevSelectedNote === note ? undefined : note
-                        )
-                      }
-                      onDragStart={handleDragStart}
-                      onDragEnd={handleDragEnd}
-                      onPin={() => {
-                        const _notes = notes.slice();
-                        const note = _notes.find(
-                          ({ createdAt: ts }) => ts === createdAt
-                        );
-                        const { status } = note;
-                        if (status?.includes('pinned'))
-                          note.status = note.status.filter(
-                            (s) => s !== 'pinned'
-                          );
-                        else note.status = (status ?? []).concat('pinned');
-
-                        setNotes(_notes);
-                      }}
-                      onEdit={getHandleEdit(note)}
-                      onDone={() => {
-                        const _notes = notes.slice();
-                        const note = _notes.find(
-                          ({ createdAt: ts }) => ts === createdAt
-                        );
-                        note.status = (note.status ?? []).concat('done');
-                        setNotes(_notes);
-                      }}
-                      onDelete={() => {
-                        setSelectedNote();
-                        setNotes(notes.filter((n) => n !== note));
-                      }}
-                      status={status ?? []}
-                      selected={isSelected}
-                    />
-                  );
-                })}
-              </div>
             </div>
           </div>
-        )}
+        </div>
         <Draft
           open={addNoteStatus === ADD_NOTE_STATUS.ADDING}
           onOK={({ title, description }) => {
