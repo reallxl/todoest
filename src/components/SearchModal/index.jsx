@@ -41,6 +41,11 @@ const SearchModal = ({ onSearch, onClose }) => {
     handleSearch();
   };
 
+  const handleKeyDown = ({ key }) => {
+    if (key !== 'Enter' && key !== ' ') return;
+    handleSearch();
+  };
+
   return (
     <div
       className="fixed left-0 top-0 z-top h-screen w-screen"
@@ -59,6 +64,8 @@ const SearchModal = ({ onSearch, onClose }) => {
         <div
           className="cursor-pointer rounded-md border-2 border-white bg-white p-1 hover:border-black active:border-black"
           onClick={handleSearch}
+          onKeyDown={handleKeyDown}
+          tabIndex="0"
         >
           <TiZoomOutline className="size-6 fill-black" />
         </div>
