@@ -13,7 +13,7 @@ import {
 
 import { Draft, Note, SearchModal } from '@/components';
 import { TOAST_TIMEOUT_MS } from '@/config';
-import { ADD_NOTE_STATUS } from '@/constants';
+import { ADD_NOTE_STATUS, SORTING } from '@/constants';
 
 const Home = () => {
   const [notes, setNotes] = useState([]);
@@ -71,12 +71,12 @@ const Home = () => {
           </div>
         </div>
         <div
-          className={`size-fit cursor-pointer rounded-md border bg-white p-1 ${!currentSort ? 'opacity-50 hover:opacity-100 active:opacity-100' : 'hover:border-white hover:bg-black active:border-white active:bg-black [&>svg]:hover:fill-white [&>svg]:active:fill-white'}`}
+          className={`size-fit cursor-pointer rounded-md border bg-white p-1 ${!sorting ? 'opacity-50 hover:opacity-100 active:opacity-100' : 'hover:border-white hover:bg-black active:border-white active:bg-black [&>svg]:hover:fill-white [&>svg]:active:fill-white'}`}
           onClick={handleSort}
         >
-          {!currentSort ? (
+          {!sorting ? (
             <TiArrowUnsorted className="size-6 fill-black" />
-          ) : currentSort === 'asc' ? (
+          ) : sorting === SORTING.ASC ? (
             <TiArrowSortedUp className="size-6 fill-black" />
           ) : (
             <TiArrowSortedDown className="size-6 fill-black" />
@@ -100,7 +100,7 @@ const Home = () => {
     const { zIndex } = getComputedStyle(noteEl);
     if (+zIndex === currentLayerRef.current) return;
 
-    noteEl.style.zIndex = ++currentLayerRef.current;
+    // noteEl.style.zIndex = ++currentLayerRef.current;
   };
 
   const handleDragEnd = (e) => {
@@ -123,11 +123,11 @@ const Home = () => {
       setNotes((prevNotes) => {
         const _notes = prevNotes.slice();
         _notes.splice(
-          _notes.findIndex(({ timestamp }) => timestamp === +currentKey),
+          _notes.findIndex(({ createdAt }) => createdAt === +currentKey),
           1
         );
         _notes.push(
-          prevNotes.find(({ timestamp }) => timestamp === +currentKey)
+          prevNotes.find(({ createdAt }) => createdAt === +currentKey)
         );
         return _notes;
       });
@@ -145,14 +145,14 @@ const Home = () => {
             const _notes = prevNotes.slice();
 
             _notes.splice(
-              _notes.findIndex(({ timestamp }) => timestamp === +currentKey),
+              _notes.findIndex(({ createdAt }) => createdAt === +currentKey),
               1
             );
             _notes.splice(
-              _notes.findIndex(({ timestamp }) => timestamp === +key) +
+              _notes.findIndex(({ createdAt }) => createdAt === +key) +
                 +!!(myTop >= (top + bottom) / 2),
               0,
-              prevNotes.find(({ timestamp }) => timestamp === +currentKey)
+              prevNotes.find(({ createdAt }) => createdAt === +currentKey)
             );
 
             return _notes;
@@ -221,21 +221,35 @@ const Home = () => {
       return regex.test(title) || regex.test(description);
     });
 
-  const [currentSort, setCurrentSort] = useState();
+  const [sorting, setSorting] = useState();
 
   const handleSort = () => {
+    const sort = sorting === SORTING.ASC ? SORTING.DESC : SORTING.ASC;
+
     const sorter =
-      currentSort === 'desc'
-        ? ({ timestamp: tsA }, { timestamp: tsB }) => tsB - tsA
-        : ({ timestamp: tsA }, { timestamp: tsB }) => tsA - tsB;
+      sort === SORTING.ASC
+        ? ({ createdAt: tsA }, { createdAt: tsB }) => tsA - tsB
+        : ({ createdAt: tsA }, { createdAt: tsB }) => tsB - tsA;
 
     setNotes([
       ...pinnedNotes.toSorted(sorter),
       ...restNotes.toSorted(sorter),
       ...doneNotes.toSorted(sorter),
     ]);
-    setCurrentSort((prevSort) => (prevSort === 'desc' ? 'asc' : 'desc'));
+    setSorting(sort);
   };
+
+  const getHandleEdit =
+    ({ createdAt }) =>
+    ({ title, description }) =>
+      setNotes((prevNotes) => {
+        const _notes = prevNotes.slice();
+        const note = _notes.find(({ createdAt: ts }) => ts === createdAt);
+        note.title = title;
+        note.description = description;
+        note.updatedAt = Date.now();
+        return _notes;
+      });
 
   return (
     <>
@@ -254,12 +268,13 @@ const Home = () => {
           <span className="self-start text-white">
             Notes containing &quot;
             <span className="font-bold">{keyword}</span>
-            &quot; :
+            &quot; :{' '}
+            {`${!sortedNotes.length ? 'no result found. Try something else.' : ''}`}
           </span>
         )}
         {!!notes.length && (
           <div className="relative h-px w-full grow">
-            {!addNoteStatus &&
+            {addNoteStatus === ADD_NOTE_STATUS.READY_TO_ADD &&
               !selectedNote &&
               listContainerH &&
               sortedNotes.map(({ status }, index) => {
@@ -296,16 +311,17 @@ const Home = () => {
                 className={`flex ${selectedNote ? 'h-full' : 'h-fit'} w-full flex-col gap-2`}
               >
                 {sortedNotes.map((note) => {
-                  const { title, description, timestamp, status } = note;
+                  const { title, description, createdAt, updatedAt, status } =
+                    note;
                   const isSelected = selectedNote === note;
 
                   return (
                     <Note
-                      key={timestamp}
-                      dataKey={timestamp}
+                      key={createdAt}
+                      dataKey={createdAt}
                       title={title}
                       description={description}
-                      timestamp={timestamp}
+                      timestamp={updatedAt ?? createdAt}
                       onClick={() =>
                         setSelectedNote((prevSelectedNote) =>
                           prevSelectedNote === note ? undefined : note
@@ -316,7 +332,7 @@ const Home = () => {
                       onPin={() => {
                         const _notes = notes.slice();
                         const note = _notes.find(
-                          ({ timestamp: ts }) => ts === timestamp
+                          ({ createdAt: ts }) => ts === createdAt
                         );
                         const { status } = note;
                         if (status?.includes('pinned'))
@@ -327,21 +343,11 @@ const Home = () => {
 
                         setNotes(_notes);
                       }}
-                      onEdit={({ title, description }) =>
-                        setNotes((prevNotes) => {
-                          const _notes = prevNotes.slice();
-                          const note = _notes.find(
-                            ({ timestamp: ts }) => ts === timestamp
-                          );
-                          note.title = title;
-                          note.description = description;
-                          return _notes;
-                        })
-                      }
+                      onEdit={getHandleEdit(note)}
                       onDone={() => {
                         const _notes = notes.slice();
                         const note = _notes.find(
-                          ({ timestamp: ts }) => ts === timestamp
+                          ({ createdAt: ts }) => ts === createdAt
                         );
                         note.status = (note.status ?? []).concat('done');
                         setNotes(_notes);
@@ -362,7 +368,7 @@ const Home = () => {
         <Draft
           open={addNoteStatus === ADD_NOTE_STATUS.ADDING}
           onOK={({ title, description }) => {
-            setNotes([...notes, { title, description, timestamp: Date.now() }]);
+            setNotes([...notes, { title, description, createdAt: Date.now() }]);
             setAddNoteStatus(ADD_NOTE_STATUS.JUST_ADDED);
           }}
           onCancel={() => setAddNoteStatus(ADD_NOTE_STATUS.READY_TO_ADD)}
@@ -370,7 +376,7 @@ const Home = () => {
         <div
           className={`absolute bottom-6 left-6 z-second w-[calc(100%-3rem)] rounded-md border-4 border-black bg-white p-4 text-black transition-all duration-300 ${addNoteStatus === ADD_NOTE_STATUS.JUST_ADDED ? 'opacity-100' : 'translate-y-full opacity-0'}`}
         >
-          New note added !
+          New item added !
         </div>
       </main>
     </>

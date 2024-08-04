@@ -3,3 +3,8 @@ export const ADD_NOTE_STATUS = {
   ADDING: 'ADDING',
   JUST_ADDED: 'JUST_ADDED',
 };
+
+export const SORTING = {
+  ASC: 'ASC',
+  DESC: 'DESC',
+};

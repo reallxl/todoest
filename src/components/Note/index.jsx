@@ -461,7 +461,6 @@ const Note = ({
       onMouseUp={handleDragEnd}
       onTouchEnd={handleDragEnd}
       onClick={(e) => {
-        console.log('onclick', isConfirming, isConfirmingDelete);
         const { current: el } = doneButtonRef ?? {};
         const { target } = e;
         if (el?.contains(target)) {
@@ -498,7 +497,7 @@ const Note = ({
       </div>
       {selected && (
         <span className="absolute bottom-2 right-6 text-xs text-slate-500">
-          {getTimeString(timestamp)}
+          {`${timestamp !== dataKey ? 'Last edited ' : ''}${getTimeString(timestamp)}`}
         </span>
       )}
       {renderActionButtons()}
