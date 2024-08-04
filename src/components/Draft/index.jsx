@@ -9,7 +9,7 @@ const Draft = ({ open, onOK, onCancel }) => {
 
   useEffect(() => {
     if (open) {
-      descriptionRef.current.focus();
+      setTimeout(() => descriptionRef.current.focus(), 300);
       return;
     }
 
