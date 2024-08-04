@@ -35,73 +35,73 @@ const Board = ({ notes, onSelectNote, onUpdateNotes }) => {
     return () => listContanierEl.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const currentLayerRef = useRef(0);
+  // const currentLayerRef = useRef(0);
 
-  const handleDragStart = ({ target }) => {
-    const noteEl = target.closest('div');
-    const { zIndex } = getComputedStyle(noteEl);
-    if (+zIndex === currentLayerRef.current) return;
+  // const handleDragStart = ({ target }) => {
+  //   const noteEl = target.closest('div');
+  //   const { zIndex } = getComputedStyle(noteEl);
+  //   if (+zIndex === currentLayerRef.current) return;
 
-    // noteEl.style.zIndex = ++currentLayerRef.current;
-  };
+  //   // noteEl.style.zIndex = ++currentLayerRef.current;
+  // };
 
-  const handleDragEnd = (e) => {
-    const { type, target } = e;
-    if (!type.includes('touch')) return;
+  // const handleDragEnd = (e) => {
+  //   const { type, target } = e;
+  //   if (!type.includes('touch')) return;
 
-    const { touches, changedTouches } = e.originalEvent ?? e;
-    const { pageX, pageY } = touches[0] ?? changedTouches[0];
+  //   const { touches, changedTouches } = e.originalEvent ?? e;
+  //   const { pageX, pageY } = touches[0] ?? changedTouches[0];
 
-    const { top: lastNoteElTop, bottom: lastNoteElBottom } = document
-      .querySelector('div[data-note="true"]:last-of-type')
-      .getBoundingClientRect();
+  //   const { top: lastNoteElTop, bottom: lastNoteElBottom } = document
+  //     .querySelector('div[data-note="true"]:last-of-type')
+  //     .getBoundingClientRect();
 
-    const currentNoteEl = target.closest('div');
-    const {
-      dataset: { key: currentKey },
-    } = currentNoteEl;
+  //   const currentNoteEl = target.closest('div');
+  //   const {
+  //     dataset: { key: currentKey },
+  //   } = currentNoteEl;
 
-    if (pageY >= (lastNoteElTop + lastNoteElBottom) / 2) {
-      onUpdateNotes((prevNotes) => {
-        const _notes = prevNotes.slice();
-        _notes.splice(
-          _notes.findIndex(({ createdAt }) => createdAt === +currentKey),
-          1
-        );
-        _notes.push(
-          prevNotes.find(({ createdAt }) => createdAt === +currentKey)
-        );
-        return _notes;
-      });
-    } else {
-      [...document.elementsFromPoint(pageX, pageY)]
-        .filter((el) => el.dataset?.note && el !== currentNoteEl)
-        .map((el) => {
-          const {
-            dataset: { key },
-          } = el;
-          const { top: myTop } = currentNoteEl.getBoundingClientRect();
-          const { top, bottom } = el.getBoundingClientRect();
+  //   if (pageY >= (lastNoteElTop + lastNoteElBottom) / 2) {
+  //     onUpdateNotes((prevNotes) => {
+  //       const _notes = prevNotes.slice();
+  //       _notes.splice(
+  //         _notes.findIndex(({ createdAt }) => createdAt === +currentKey),
+  //         1
+  //       );
+  //       _notes.push(
+  //         prevNotes.find(({ createdAt }) => createdAt === +currentKey)
+  //       );
+  //       return _notes;
+  //     });
+  //   } else {
+  //     [...document.elementsFromPoint(pageX, pageY)]
+  //       .filter((el) => el.dataset?.note && el !== currentNoteEl)
+  //       .map((el) => {
+  //         const {
+  //           dataset: { key },
+  //         } = el;
+  //         const { top: myTop } = currentNoteEl.getBoundingClientRect();
+  //         const { top, bottom } = el.getBoundingClientRect();
 
-          onUpdateNotes((prevNotes) => {
-            const _notes = prevNotes.slice();
+  //         onUpdateNotes((prevNotes) => {
+  //           const _notes = prevNotes.slice();
 
-            _notes.splice(
-              _notes.findIndex(({ createdAt }) => createdAt === +currentKey),
-              1
-            );
-            _notes.splice(
-              _notes.findIndex(({ createdAt }) => createdAt === +key) +
-                +!!(myTop >= (top + bottom) / 2),
-              0,
-              prevNotes.find(({ createdAt }) => createdAt === +currentKey)
-            );
+  //           _notes.splice(
+  //             _notes.findIndex(({ createdAt }) => createdAt === +currentKey),
+  //             1
+  //           );
+  //           _notes.splice(
+  //             _notes.findIndex(({ createdAt }) => createdAt === +key) +
+  //               +!!(myTop >= (top + bottom) / 2),
+  //             0,
+  //             prevNotes.find(({ createdAt }) => createdAt === +currentKey)
+  //           );
 
-            return _notes;
-          });
-        });
-    }
-  };
+  //           return _notes;
+  //         });
+  //       });
+  //   }
+  // };
 
   const renderPins = () =>
     notes.map(({ status }, index) => {
@@ -172,8 +172,8 @@ const Board = ({ notes, onSelectNote, onUpdateNotes }) => {
                     prevSelectedNote === note ? undefined : note
                   )
                 }
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
+                // onDragStart={handleDragStart}
+                // onDragEnd={handleDragEnd}
                 onPin={() => {
                   const _notes = notes.slice();
                   const note = _notes.find(

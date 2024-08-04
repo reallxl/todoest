@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { getTimeString } from '@/utils/helpers';
+
 import ActionButtonColumn from './ActionButtonColumn';
 import Content from './Content';
 
@@ -11,8 +12,8 @@ const Note = ({
   description,
   timestamp,
   onClick,
-  onDragStart,
-  onDragEnd,
+  // onDragStart,
+  // onDragEnd,
   onPin,
   onEdit,
   onDone,
@@ -26,11 +27,11 @@ const Note = ({
 
   const [isDesktop, setIsDesktop] = useState();
   const [isClicking, setIsClicking] = useState();
-  const [isDragging, setIsDragging] = useState();
+  // const [isDragging, setIsDragging] = useState();
 
-  const [defaultPosStyle, setDefaultPosStyle] = useState({});
+  // const [defaultPosStyle, setDefaultPosStyle] = useState({});
   const [style, setStyle] = useState({});
-  const [selectedStyle, setSelectedStyle] = useState({});
+  // const [selectedStyle, setSelectedStyle] = useState({});
 
   const [isEditing, setIsEditing] = useState();
 
@@ -50,23 +51,21 @@ const Note = ({
   }, [selected]);
 
   useEffect(() => {
-    const noteEl = ref?.current;
-    if (!noteEl) return;
-
     const handleMeidaQueryChange = ({ matches }) => {
       setIsDesktop(matches);
 
-      const { top, left, width } = noteEl.getBoundingClientRect();
-      setDefaultPosStyle(
-        matches
-          ? {
-              position: 'absolute',
-              top: `${top}px`,
-              left: `${left}px`,
-              width: `${width}px`,
-            }
-          : {}
-      );
+      // const { current: noteEl } = ref;
+      // const { top, left, width } = noteEl.getBoundingClientRect();
+      // setDefaultPosStyle(
+      //   matches
+      //     ? {
+      //         position: 'absolute',
+      //         top: `${top}px`,
+      //         left: `${left}px`,
+      //         width: `${width}px`,
+      //       }
+      //     : {}
+      // );
     };
 
     const mql = matchMedia('(min-width: 768px)');
@@ -98,132 +97,132 @@ const Note = ({
       };
 
     setIsClicking(true);
-    setIsDragging(true);
-    onDragStart?.(e);
+    // setIsDragging(true);
+    // onDragStart?.(e);
   };
 
-  const handleDragEnd = useCallback(
-    (e) => {
-      if (e.type.includes('touch')) setStyle();
+  // const handleDragEnd = useCallback(
+  //   (e) => {
+  //     if (e.type.includes('touch')) setStyle();
 
-      let doHandleDragEnd;
-      const { x: startX, y: startY } = grabStartPosRef.current;
-      if (e.type.includes('touch')) {
-        const { touches, changedTouches } = e.originalEvent ?? e;
-        const touch = touches[0] ?? changedTouches[0];
+  //     let doHandleDragEnd;
+  //     const { x: startX, y: startY } = grabStartPosRef.current;
+  //     if (e.type.includes('touch')) {
+  //       const { touches, changedTouches } = e.originalEvent ?? e;
+  //       const touch = touches[0] ?? changedTouches[0];
 
-        doHandleDragEnd =
-          Math.abs(touch.pageX - startX) > 3 ||
-          Math.abs(touch.pageY - startY) > 3;
-      } else
-        doHandleDragEnd =
-          Math.abs(e.clientX - startX) > 3 || Math.abs(e.clientY - startY) > 3;
-      if (doHandleDragEnd) onDragEnd?.(e);
+  //       doHandleDragEnd =
+  //         Math.abs(touch.pageX - startX) > 3 ||
+  //         Math.abs(touch.pageY - startY) > 3;
+  //     } else
+  //       doHandleDragEnd =
+  //         Math.abs(e.clientX - startX) > 3 || Math.abs(e.clientY - startY) > 3;
+  //     if (doHandleDragEnd) onDragEnd?.(e);
 
-      setIsDragging(false);
-      grabStartPosRef.current = null;
-    },
-    [onDragEnd]
-  );
+  //     setIsDragging(false);
+  //     grabStartPosRef.current = null;
+  //   },
+  //   [onDragEnd]
+  // );
 
-  useEffect(() => {
-    const tryHandleDragEnd = (e) => {
-      if (!isDragging) return;
-      handleDragEnd(e);
-    };
+  // useEffect(() => {
+  //   const tryHandleDragEnd = (e) => {
+  //     if (!isDragging) return;
+  //     handleDragEnd(e);
+  //   };
 
-    document.addEventListener('mouseup', tryHandleDragEnd);
-    document.addEventListener('touchend', tryHandleDragEnd);
+  //   document.addEventListener('mouseup', tryHandleDragEnd);
+  //   document.addEventListener('touchend', tryHandleDragEnd);
 
-    return () => {
-      document.removeEventListener('mouseup', tryHandleDragEnd);
-      document.removeEventListener('touchend', tryHandleDragEnd);
-    };
-  }, [isDragging, handleDragEnd]);
+  //   return () => {
+  //     document.removeEventListener('mouseup', tryHandleDragEnd);
+  //     document.removeEventListener('touchend', tryHandleDragEnd);
+  //   };
+  // }, [isDragging, handleDragEnd]);
 
   useEffect(() => setStyle(), [dataKey]);
 
+  // useEffect(() => {
+  //   const handleDragMove = (e) => {
+  //     setIsClicking(false);
+  //     if (!isDragging || !grabStartPosRef.current) return;
+
+  //     const { x: startingTranslateX, y: startingTranslateY } =
+  //       startingTranslateRef.current;
+  //     const { x: startX, y: startY } = grabStartPosRef.current;
+
+  //     if (e.type.includes('touch')) {
+  //       const { touches, changedTouches } = e.originalEvent ?? e;
+  //       const touch = touches[0] ?? changedTouches[0];
+
+  //       setStyle((prevStyle) => ({
+  //         ...prevStyle,
+  //         transform: `translate(0, ${(startingTranslateY + touch.pageY - startY).toFixed(2)}px)`,
+  //       }));
+  //     } else
+  //       setStyle((prevStyle) => ({
+  //         ...prevStyle,
+  //         transform: `translate(${(startingTranslateX + e.clientX - startX).toFixed(2)}px, ${(startingTranslateY + e.clientY - startY).toFixed(2)}px)`,
+  //       }));
+  //   };
+
+  //   if (isDragging) {
+  //     document.addEventListener('mousemove', handleDragMove);
+  //     document.addEventListener('touchmove', handleDragMove);
+  //   } else {
+  //     document.removeEventListener('mousemove', handleDragMove);
+  //     document.removeEventListener('touchmove', handleDragMove);
+  //   }
+
+  //   return () => {
+  //     document.removeEventListener('mousemove', handleDragMove);
+  //     document.removeEventListener('touchmove', handleDragMove);
+  //   };
+  // }, [isDragging]);
+
   useEffect(() => {
-    const handleDragMove = (e) => {
-      setIsClicking(false);
-      if (!isDragging || !grabStartPosRef.current) return;
-
-      const { x: startingTranslateX, y: startingTranslateY } =
-        startingTranslateRef.current;
-      const { x: startX, y: startY } = grabStartPosRef.current;
-
-      if (e.type.includes('touch')) {
-        const { touches, changedTouches } = e.originalEvent ?? e;
-        const touch = touches[0] ?? changedTouches[0];
-
-        setStyle((prevStyle) => ({
-          ...prevStyle,
-          transform: `translate(0, ${(startingTranslateY + touch.pageY - startY).toFixed(2)}px)`,
-        }));
-      } else
-        setStyle((prevStyle) => ({
-          ...prevStyle,
-          transform: `translate(${(startingTranslateX + e.clientX - startX).toFixed(2)}px, ${(startingTranslateY + e.clientY - startY).toFixed(2)}px)`,
-        }));
-    };
-
-    if (isDragging) {
-      document.addEventListener('mousemove', handleDragMove);
-      document.addEventListener('touchmove', handleDragMove);
-    } else {
-      document.removeEventListener('mousemove', handleDragMove);
-      document.removeEventListener('touchmove', handleDragMove);
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleDragMove);
-      document.removeEventListener('touchmove', handleDragMove);
-    };
-  }, [isDragging]);
-
-  useEffect(() => {
-    if (isDesktop)
-      setSelectedStyle(
-        selected
-          ? {
-              top: '50%',
-              left: '50%',
-              width: '75%',
-              height: '75%',
-              transform: 'translate(-50%, -50%)',
-              zIndex: 100,
-            }
-          : {}
-      );
-    else {
-      if (selected) {
-        [...document.querySelectorAll('div[data-note="true"]')]
-          .filter((el) => el !== ref.current)
-          .forEach((el) => {
-            el.style.padding = 0;
-            el.style.border = 0;
-            el.style.opacity = 0;
-            el.style.height = 0;
-            el.style.marginTop = '-0.5rem';
-            el.style.overflow = 'hidden';
-          });
-        setSelectedStyle({
-          height: '100%',
+    // if (isDesktop) return;
+    //   setSelectedStyle(
+    //     selected
+    //       ? {
+    //           top: '50%',
+    //           left: '50%',
+    //           width: '75%',
+    //           height: '75%',
+    //           transform: 'translate(-50%, -50%)',
+    //           zIndex: 100,
+    //         }
+    //       : {}
+    //   );
+    // else {
+    if (selected) {
+      [...document.querySelectorAll('div[data-note="true"]')]
+        .filter((el) => el !== ref.current)
+        .forEach((el) => {
+          el.style.padding = 0;
+          el.style.border = 0;
+          el.style.opacity = 0;
+          el.style.height = 0;
+          el.style.marginTop = '-0.5rem';
+          el.style.overflow = 'hidden';
         });
-      } else {
-        [...document.querySelectorAll('div[data-note="true"]')]
-          .filter((el) => el !== ref.current)
-          .forEach((el) => {
-            el.style.padding = null;
-            el.style.border = null;
-            el.style.opacity = null;
-            el.style.height = null;
-            el.style.marginTop = null;
-            el.style.overflow = null;
-          });
-        setSelectedStyle({});
-      }
+      // setSelectedStyle({
+      //   height: '100%',
+      // });
+    } else {
+      [...document.querySelectorAll('div[data-note="true"]')]
+        .filter((el) => el !== ref.current)
+        .forEach((el) => {
+          el.style.padding = null;
+          el.style.border = null;
+          el.style.opacity = null;
+          el.style.height = null;
+          el.style.marginTop = null;
+          el.style.overflow = null;
+        });
+      // setSelectedStyle({});
     }
+    // }
   }, [selected, isDesktop]);
 
   useEffect(() => {
@@ -319,17 +318,17 @@ const Note = ({
     <div
       data-note
       data-key={dataKey}
-      className={`${selected ? 'h-full p-6 pb-8' : 'h-[6.5rem] px-6 py-4'} relative flex w-full flex-col gap-2 rounded-md border-2 border-black ${isDragging ? 'cursor-grabbing duration-0' : 'cursor-grab duration-300 ease-in'} select-none items-center justify-center bg-yellow-200 text-black transition-all ${done ? 'border-4 border-green-500 opacity-80' : ''} md:w-96 ${className ? `${className}` : ''}`}
+      className={`${selected ? `p-6 pb-8 ${isDesktop ? 'left-1/2 top-1/2 z-10 h-[75vh] min-h-[75vh] w-[75vw] -translate-x-1/2 -translate-y-1/2' : 'size-full'}` : 'h-[6.5rem] w-full px-6 py-4 md:w-96'} relative flex cursor-grab select-none flex-col items-center justify-center gap-2 rounded-md border-2 border-black bg-yellow-200 text-black transition-all duration-300 ease-in ${done ? 'border-4 border-green-500 opacity-80' : ''} ${className ? `${className}` : ''}`}
       style={{
-        ...defaultPosStyle,
+        // ...defaultPosStyle,
         ...style,
-        ...selectedStyle,
+        // ...selectedStyle,
       }}
       ref={ref}
       onMouseDown={handleDragStart}
       onTouchStart={handleDragStart}
-      onMouseUp={handleDragEnd}
-      onTouchEnd={handleDragEnd}
+      // onMouseUp={handleDragEnd}
+      // onTouchEnd={handleDragEnd}
       onClick={handleClick}
     >
       {done && renderDoneMark()}

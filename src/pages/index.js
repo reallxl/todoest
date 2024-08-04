@@ -111,7 +111,7 @@ const Home = () => {
       <Head>
         <title>todoest</title>
       </Head>
-      <main className="relative flex size-full flex-col items-center justify-center gap-4 overflow-hidden p-6 md:p-24">
+      <main className="relative flex size-full flex-col items-center justify-center gap-4 overflow-hidden p-6 md:p-12">
         {notes.length ? (
           <Provider value={{ keyword, sorting, selectedNote, addNoteStatus }}>
             <ActionButtonRow
