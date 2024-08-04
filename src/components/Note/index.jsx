@@ -1,3 +1,4 @@
+import { useDoubleConfirm } from '@/hooks';
 import { getTimeString } from '@/utils/helpers';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -39,6 +40,16 @@ const Note = ({
   const [selectedStyle, setSelectedStyle] = useState({});
 
   const [isEditing, setIsEditing] = useState();
+
+  useEffect(() => {
+    setIsConfirming(false);
+    setIsConfirmingDelete(false);
+  }, [status]);
+
+  useEffect(() => {
+    if (!isEditing) return;
+    descriptionRef.current.focus();
+  }, [isEditing]);
 
   useEffect(() => {
     if (selected) return;
@@ -201,6 +212,7 @@ const Note = ({
             el.style.opacity = 0;
             el.style.height = 0;
             el.style.marginTop = '-0.5rem';
+            el.style.overflow = 'hidden';
           });
         setSelectedStyle({
           height: '100%',
@@ -214,6 +226,7 @@ const Note = ({
             el.style.opacity = null;
             el.style.height = null;
             el.style.marginTop = null;
+            el.style.overflow = null;
           });
         setSelectedStyle({});
       }
@@ -238,43 +251,87 @@ const Note = ({
   const titleRef = useRef();
   const descriptionRef = useRef();
 
-  const handleClickOK = (e) => {
-    e.stopPropagation();
+  const doneButtonRef = useRef();
 
-    if (isEditing) {
-      onEdit?.({
-        title: titleRef.current.value,
-        description: descriptionRef.current.value,
-      });
-      setIsEditing(false);
-    } else onDone?.();
-  };
+  const [isConfirming, setIsConfirming] = useState();
 
-  const [isConfirmingDeletion, setIsConfirmingDeletion] = useState();
+  // useEffect(() => {
+  //   const { current: containerEl } = ref;
+  //   if (!containerEl) return;
+
+  //   const handleClick = (e) => {
+  //     const { current: el } = doneButtonRef;
+  //     if (!el) return;
+
+  //     const { target } = e;
+  //     console.log('dc onclick', isConfirming);
+  //     if (el.contains(target)) {
+  //       if (isConfirming) {
+  //         onDone(e);
+  //       } else setIsConfirming(true);
+  //     } else if (isConfirming) setIsConfirming(false);
+  //   };
+
+  //   containerEl.addEventListener('click', handleClick);
+  //   return () => containerEl.removeEventListener('click', handleClick);
+  // }, [onDone, isConfirming]);
+
   const deleteButtonRef = useRef();
 
-  useEffect(() => {
-    if (!isConfirmingDeletion) return;
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState();
 
-    const noteEl = ref.current;
-    const handleClick = ({ target }) => {
-      if (deleteButtonRef?.current?.contains(target)) return;
-      setIsConfirmingDeletion(false);
-    };
-    noteEl.addEventListener('click', handleClick);
-    return () => noteEl.removeEventListener('click', handleClick);
-  }, [isConfirmingDeletion]);
+  // useEffect(() => {
+  //   const { current: containerEl } = ref;
+  //   if (!containerEl) return;
+
+  //   const handleClick = (e) => {
+  //     const { current: el } = deleteButtonRef;
+  //     if (!el) return;
+
+  //     const { target } = e;
+  //     console.log('dc onclick', isConfirmingDelete);
+  //     if (el.contains(target)) {
+  //       if (isConfirmingDelete) {
+  //         onDelete(e);
+  //       } else setIsConfirmingDelete(true);
+  //     } else if (isConfirmingDelete) setIsConfirmingDelete(false);
+  //   };
+
+  //   containerEl.addEventListener('click', handleClick);
+  //   return () => containerEl.removeEventListener('click', handleClick);
+  // }, [onDelete, isConfirmingDelete]);
+
+  // const {
+  //   isConfirming: isConfirmingDelete,
+  //   setContainerRef: setContainerRef2,
+  //   ref: deleteButtonRef,
+  // } = useDoubleConfirm(onDelete);
+
+  // const {
+  //   isConfirming,
+  //   setContainerRef,
+  //   ref: doneButtonRef,
+  // } = useDoubleConfirm(onDone);
+
+  const handleClickOK = (e) => {
+    e.stopPropagation();
+    onEdit?.({
+      title: titleRef.current.value,
+      description: descriptionRef.current.value,
+    });
+    setIsEditing(false);
+  };
 
   const handleClickCancel = (e) => {
-    console.log('click cancel', isConfirmingDeletion);
     e.stopPropagation();
-
-    if (isEditing) setIsEditing(false);
-    else if (isConfirmingDeletion) {
-      setIsConfirmingDeletion(false);
-      onDelete?.();
-    } else setIsConfirmingDeletion(true);
+    setIsEditing(false);
   };
+
+  useEffect(() => {
+    if (!isEditing) return;
+    setIsConfirming(false);
+    setIsConfirmingDelete(false);
+  }, [isEditing]);
 
   const renderEditor = () => (
     <>
@@ -320,7 +377,7 @@ const Note = ({
       className={`absolute right-0 top-1/2 flex -translate-y-1/2 translate-x-1/2 flex-col gap-2 transition-all ${selected ? 'duration-300' : 'opacity-0 duration-0'}`}
     >
       <div
-        className={`cursor-pointer rounded-md border-2 ${pinned ? 'bg-slate-700' : 'bg-white hover:bg-slate-200'} border-black p-0.5 transition-opacity ${isEditing ? '-mt-8 opacity-0 duration-150' : 'duration-300'}`}
+        className={`cursor-pointer rounded-md border-2 ${pinned ? 'border-white bg-black' : 'border-black bg-white hover:border-white hover:bg-black active:border-white active:bg-black [&_svg]:hover:fill-white [&_svg]:active:fill-white'} p-0.5 transition-opacity ${isEditing ? 'opacity-0' : ''} duration-300`}
         onClick={(e) => {
           e.stopPropagation();
           onPin?.();
@@ -335,7 +392,7 @@ const Note = ({
       {!done && (
         <>
           <div
-            className={`cursor-pointer rounded-md border-2 border-black bg-white p-0.5 transition-opacity ${isEditing ? '-mt-8 opacity-0 duration-150' : 'duration-300'} hover:bg-slate-200`}
+            className={`cursor-pointer rounded-md border-2 border-black bg-white p-0.5 transition-opacity ${isEditing ? 'opacity-0' : ''} border-black bg-white duration-300 hover:border-white hover:bg-black active:border-white active:bg-black [&_svg]:hover:fill-white [&_svg]:active:fill-white`}
             onClick={(e) => {
               e.stopPropagation();
               setIsEditing(true);
@@ -343,29 +400,46 @@ const Note = ({
           >
             <TiPen className="size-6" />
           </div>
-          <div
-            className={`cursor-pointer rounded-md border-2 border-green-500 bg-white p-0.5 ${selected ? '' : 'opacity-50 hover:opacity-100'} hover:bg-green-500 [&>svg]:hover:fill-white`}
-            onClick={handleClickOK}
-          >
-            <TiTickOutline
-              className={`${selected ? 'size-6' : 'size-4'} fill-green-500 stroke-green-500`}
-            />
+          <div className="relative size-fit">
+            <div
+              className={`cursor-pointer rounded-md border-2 border-green-500 bg-white p-0.5 ${selected ? '' : 'opacity-50 hover:opacity-100'} ${isConfirming ? 'border-white bg-green-500 [&>svg]:fill-white' : 'border-green-500 bg-white hover:bg-green-500 active:bg-green-500 [&>svg]:hover:fill-white [&>svg]:active:fill-white'}`}
+              {...(isEditing
+                ? { onClick: handleClickOK }
+                : { ref: doneButtonRef })}
+            >
+              <TiTickOutline
+                className={`${selected ? 'size-6' : 'size-4'} z-0 fill-green-500 stroke-green-500`}
+              />
+            </div>
+            <div
+              className={`absolute left-0 top-1/2 -z-10 w-max -translate-y-1/2 rounded-s-md border-2 border-black bg-white pe-6 ps-2 text-sm text-black transition-all duration-300 ${isConfirming ? 'translate-x-[calc(-100%+1rem)] opacity-100' : '-translate-x-2/3 opacity-0'}`}
+            >
+              All set?
+            </div>
           </div>
         </>
       )}
-      <div
-        className={`cursor-pointer rounded-md border-2 p-0.5 ${isConfirmingDeletion ? 'border-white bg-red-500 [&>svg]:fill-white' : 'border-red-500 bg-white hover:bg-red-500 [&>svg]:hover:fill-white'}`}
-        onClick={handleClickCancel}
-        ref={deleteButtonRef}
-      >
-        <TiTimesOutline className="size-6 fill-red-500 stroke-red-500" />
+      <div className="relative size-fit">
+        <div
+          className={`relative cursor-pointer rounded-md border-2 p-0.5 ${isConfirmingDelete ? 'border-white bg-red-500 [&>svg]:fill-white' : 'border-red-500 bg-white hover:bg-red-500 active:bg-red-500 [&>svg]:hover:fill-white [&>svg]:active:fill-white'}`}
+          {...(isEditing
+            ? { onClick: handleClickCancel }
+            : { ref: deleteButtonRef })}
+        >
+          <TiTimesOutline className="size-6 fill-red-500 stroke-red-500" />
+        </div>
+        <div
+          className={`absolute left-0 top-1/2 -z-10 w-max -translate-y-1/2 rounded-s-md border-2 border-black bg-white pe-6 ps-2 text-sm text-black transition-all duration-300 ${isConfirmingDelete ? 'translate-x-[calc(-100%+1rem)] opacity-100' : '-translate-x-2/3 opacity-0'}`}
+        >
+          Sure to abandon...?
+        </div>
       </div>
     </div>
   );
 
   const renderDoneMark = () => (
     <div
-      className={`absolute left-1/2 top-1/2 z-10 origin-center -translate-x-1/2 -translate-y-1/2 rotate-[30deg] rounded-md border-2 border-green-500 bg-transparent ${selected ? 'p-4 text-2xl' : 'px-2 py-1'} font-bold text-green-500`}
+      className={`absolute left-1/2 top-1/2 origin-center -translate-x-1/2 -translate-y-1/2 rotate-[30deg] rounded-md border-2 border-green-500 bg-transparent ${selected ? 'p-4 text-2xl' : 'px-2 py-1'} font-bold text-green-500`}
     >
       DONE
     </div>
@@ -387,12 +461,36 @@ const Note = ({
       onMouseUp={handleDragEnd}
       onTouchEnd={handleDragEnd}
       onClick={(e) => {
-        if (!isClicking) return;
+        console.log('onclick', isConfirming, isConfirmingDelete);
+        const { current: el } = doneButtonRef ?? {};
+        const { target } = e;
+        if (el?.contains(target)) {
+          if (isConfirming) {
+            onDone(e);
+          } else setIsConfirming(true);
+        } else if (isConfirming) setIsConfirming(false);
+
+        const { current: delEl } = deleteButtonRef ?? {};
+
+        if (delEl?.contains(target)) {
+          if (isConfirmingDelete) {
+            onDelete(e);
+          } else setIsConfirmingDelete(true);
+        } else if (isConfirmingDelete) setIsConfirmingDelete(false);
+
+        if (
+          !isClicking ||
+          isEditing ||
+          isConfirming ||
+          isConfirmingDelete ||
+          el?.contains(target) ||
+          delEl?.contains(target)
+        )
+          return;
         onClick?.(e);
       }}
     >
       {done && renderDoneMark()}
-      {/* {!selected && pinned && renderPin()} */}
       <div
         className={`${selected ? 'size-full gap-2' : 'w-full'} flex flex-col text-wrap break-words transition-all duration-100`}
       >
